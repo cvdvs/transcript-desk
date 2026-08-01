@@ -1,0 +1,16 @@
+{
+  "name": "transcript-desk",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev -p 4999",
+    "build": "next build",
+    "start": "next start -p 3999"
+  },
+  "dependencies": {
+    "marked": "^14.1.0",
+    "next": "^15.5.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
+  }
+}

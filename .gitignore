@@ -1,0 +1,7 @@
+node_modules/
+.next/
+data/
+.DS_Store
+*.log
+native/TranscriptDesk
+Start Transcript Desk.command
