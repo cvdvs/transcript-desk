@@ -563,6 +563,12 @@ a {
   align-items: start;
 }
 
+/* grid children default to min-width:auto and refuse to shrink below their
+   content (the video iframe forces the whole page wider than a phone) */
+.note-layout > * {
+  min-width: 0;
+}
+
 @media (max-width: 980px) {
   .note-layout {
     grid-template-columns: 1fr;
