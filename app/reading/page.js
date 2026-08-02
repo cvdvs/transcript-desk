@@ -9,6 +9,8 @@ export default function ReadingPage() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(null);
   const [toast, setToast] = useState(null);
+  const [status, setStatus] = useState(null); // null = all, false = unread, true = read
+  const [tag, setTag] = useState(null);
 
   const load = useCallback(async () => {
     try {
@@ -43,12 +45,23 @@ export default function ReadingPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Couldn't add the book.");
       setTitle("");
+      if (data.existed) showToast("already on the list");
       load();
     } catch (err) {
       setError(String(err.message || err));
     } finally {
       setBusy(false);
     }
+  }
+
+  async function toggleRead(b) {
+    setBooks((prev) => prev.map((x) => (x.id === b.id ? { ...x, read: !b.read } : x))); // optimistic
+    const res = await fetch(`/api/books/${b.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ read: !b.read }),
+    });
+    if (!res.ok) load(); // revert on failure
   }
 
   async function remove(id) {
@@ -117,9 +130,53 @@ export default function ReadingPage() {
         <div className="empty">nothing here yet — add the first book above</div>
       )}
 
-      <div style={{ marginTop: 26 }}>
-        {(books || []).map((b) => (
+      {books && books.length > 0 && (
+        <div className="folder-row" style={{ marginTop: 26 }}>
+          <button className={`chip ${status === null ? "active" : ""}`} onClick={() => setStatus(null)}>
+            all ({books.length})
+          </button>
+          <button
+            className={`chip ${status === false ? "active" : ""}`}
+            onClick={() => setStatus(status === false ? null : false)}
+          >
+            unread ({books.filter((b) => !b.read).length})
+          </button>
+          <button
+            className={`chip ${status === true ? "active" : ""}`}
+            onClick={() => setStatus(status === true ? null : true)}
+          >
+            read ({books.filter((b) => b.read).length})
+          </button>
+          {[...new Set(books.flatMap((b) => b.tags || []))]
+            .sort(
+              (a, z) =>
+                books.filter((b) => b.tags?.includes(z)).length -
+                books.filter((b) => b.tags?.includes(a)).length
+            )
+            .slice(0, 12)
+            .map((t) => (
+              <button
+                key={t}
+                className={`chip ${tag === t ? "active" : ""}`}
+                style={tag === t ? {} : { color: "var(--muted)" }}
+                onClick={() => setTag(tag === t ? null : t)}
+              >
+                #{t}
+              </button>
+            ))}
+        </div>
+      )}
+
+      <div style={{ marginTop: 10 }}>
+        {(books || [])
+          .filter((b) => (status === null || Boolean(b.read) === status) && (!tag || b.tags?.includes(tag)))
+          .map((b) => (
           <div className="book-row" key={b.id}>
+            <button
+              className={`read-dot ${b.read ? "is-read" : ""}`}
+              onClick={() => toggleRead(b)}
+              title={b.read ? "Read — click to mark unread" : "Unread — click to mark read"}
+            />
             <div style={{ flex: 1, minWidth: 0 }}>
               <div className="book-title">
                 {b.title}

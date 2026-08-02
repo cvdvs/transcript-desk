@@ -11,12 +11,12 @@ export async function GET() {
 export async function POST(request) {
   const body = await request.json().catch(() => ({}));
   try {
-    const book = await addBook({
+    const { book, existed } = await addBook({
       title: body.title,
       author: body.author,
       source: body.source,
     });
-    return NextResponse.json({ book });
+    return NextResponse.json({ book, existed });
   } catch (err) {
     return NextResponse.json({ error: String(err.message || err) }, { status: 400 });
   }

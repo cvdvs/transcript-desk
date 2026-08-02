@@ -793,6 +793,35 @@ a.seg-time:hover {
 }
 
 /* reading list */
+.read-dot {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 1.5px solid var(--rule);
+  background: transparent;
+  cursor: pointer;
+  flex-shrink: 0;
+  margin-top: 3px;
+  padding: 0;
+  transition: background 0.12s, transform 0.08s;
+}
+
+.read-dot:hover {
+  transform: scale(1.15);
+}
+
+.read-dot.is-read {
+  background: var(--ink);
+  border-color: var(--ink);
+}
+
+@media (pointer: coarse) {
+  .read-dot {
+    width: 24px;
+    height: 24px;
+  }
+}
+
 .book-row {
   display: flex;
   gap: 16px;
