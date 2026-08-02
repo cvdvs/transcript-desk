@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { formatTimestamp } from "../lib/subtitles";
 import Thumb from "../components/Thumb";
 
-const PROCESSING = ["queued", "waiting", "fetching", "downloading", "transcribing", "summarizing"];
+const PROCESSING = ["queued", "waiting", "fetching", "reading", "downloading", "transcribing", "summarizing"];
 
 export default function Home() {
   const router = useRouter();
@@ -258,7 +258,7 @@ export default function Home() {
         >
           <input
             className="url-input"
-            placeholder="Paste a link — YouTube, TikTok, reels, podcasts…"
+            placeholder="Paste a link — videos, tweets, articles…"
             value={url}
             onChange={(e) => setUrl(e.target.value)}
             disabled={busy}
@@ -279,7 +279,7 @@ export default function Home() {
           <input
             ref={fileRef}
             type="file"
-            accept="video/*,audio/*,.mkv,.webm"
+            accept="video/*,audio/*,image/*,.mkv,.webm"
             multiple
             hidden
             onChange={(e) => {

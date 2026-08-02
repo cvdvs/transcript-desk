@@ -1,8 +1,9 @@
 # Transcript Desk
 
-A local research desk for the internet's video. Paste a YouTube, TikTok, or
-Instagram link — or drop in any video/audio file — and get a timestamped
-transcript, an AI summary with chapters, and a research pack (claims table,
+A local research desk for the internet. Paste a YouTube, TikTok, or Instagram
+link, a tweet, or an article URL — or drop in video, audio, or a screenshot —
+and get clean text (timestamped transcript, tweet + OCR'd images, or extracted
+article), an AI summary with chapters, and a research pack (claims table,
 fact/opinion split, verification queries), organized in a searchable library
 that also lives as plain Markdown on your disk.
 
@@ -39,6 +40,15 @@ archive that outlives the app.
   fact/opinion/speculation split, suggested verification queries
 - **Playlists**: paste a playlist link, every video becomes its own note,
   processed one at a time
+- **Tweets**: text, images (read via Apple's Vision OCR — local and free),
+  and quoted tweets captured; video tweets get the full transcript pipeline;
+  link-only tweets capture whatever they point at
+- **Articles**: readability extraction to Markdown (Defuddle), with a
+  headless-Chrome fallback for script-rendered pages
+- **Screenshots**: drop any image — the text is read out of it
+- **Reading list**: a separate section for books — add by title and the
+  author, description, and tags fill themselves in; copy or export as
+  Markdown
 - **Library**: folders, full-text search with timestamped snippets, real
   thumbnails (uploaded videos get a frame grab, audio gets a waveform tile)
 - **Markdown mirror**: every note is also a formatted `.md` in
@@ -63,6 +73,9 @@ archive that outlives the app.
   CLI](https://claude.com/claude-code), logged in (`claude` → `/login`).
   Without it, transcription, library, search, and exports all work — the AI
   buttons will tell you what's missing.
+- Optional: Apple's Command Line Tools (`xcode-select --install`) build the
+  OCR helper and the native app; Google Chrome, if present, rescues
+  script-rendered articles.
 
 ## Install
 

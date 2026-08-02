@@ -4,4 +4,5 @@ data/
 .DS_Store
 *.log
 native/TranscriptDesk
+native/ocr
 Start Transcript Desk.command

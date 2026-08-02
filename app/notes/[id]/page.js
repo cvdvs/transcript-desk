@@ -13,6 +13,7 @@ const STATUS_LABELS = {
   queued: ["queued", "Waiting for the pipeline to pick this up."],
   waiting: ["in line", "Another transcription is running — this one starts automatically after it."],
   fetching: ["fetching info", "Reading title, duration, and available captions."],
+  reading: ["extracting text", "Pulling the text out — including any text inside images."],
   downloading: ["downloading audio", "No captions available — pulling the audio track instead."],
   transcribing: ["transcribing", "Whisper is running locally. Longer videos take a few minutes."],
   summarizing: ["writing summary", "The transcript is ready — Claude is writing the summary and chapters."],
@@ -263,6 +264,10 @@ export default function NotePage() {
     .join("\n\n")
     .replace(/\n{3,}/g, "\n\n");
 
+  // text captures (tweets, articles, images) carry a markdown body instead
+  const contentText = note.body || plainTranscript;
+  const hasText = segments.length > 0 || Boolean(note.body);
+
   function markdownExport() {
     const lines = [
       `# ${note.title || "Transcript"}`,
@@ -276,7 +281,8 @@ export default function NotePage() {
     if (note.summary?.text) lines.push("## Summary", "", note.summary.text, "");
     if (note.research?.text) lines.push("## Research pack", "", note.research.text, "");
     if (note.translation?.text) lines.push("## Translation", "", note.translation.text, "");
-    lines.push("## Transcript", "", plainTranscript, "");
+    if (note.body) lines.push("## Text", "", note.body, "");
+    else lines.push("## Transcript", "", plainTranscript, "");
     return lines.join("\n");
   }
 
@@ -363,10 +369,10 @@ export default function NotePage() {
       {/* always rendered: folder + delete work in every state, including
           mid-processing (batch uploads get filed right away) */}
       <div className="actions-bar">
-          {segments.length > 0 && (
+          {hasText && (
             <>
-              <button className="btn" onClick={() => copy(plainTranscript, "transcript copied")}>
-                copy transcript
+              <button className="btn" onClick={() => copy(contentText, note.body ? "text copied" : "transcript copied")}>
+                {note.body ? "copy text" : "copy transcript"}
               </button>
               {note.summary?.text && (
                 <button className="btn" onClick={() => copy(note.summary.text, "summary copied")}>
@@ -377,7 +383,7 @@ export default function NotePage() {
                 className="btn"
                 onClick={() =>
                   copy(
-                    clipboardResearchPrompt(note, transcriptToText(segments).text),
+                    clipboardResearchPrompt(note, note.body || transcriptToText(segments).text),
                     "claude prompt copied"
                   )
                 }
@@ -387,12 +393,14 @@ export default function NotePage() {
               <button className="btn btn-plain" onClick={() => download(`${slug}.md`, markdownExport())}>
                 .md
               </button>
-              <button className="btn btn-plain" onClick={() => download(`${slug}.txt`, plainTranscript)}>
+              <button className="btn btn-plain" onClick={() => download(`${slug}.txt`, contentText)}>
                 .txt
               </button>
-              <button className="btn btn-plain" onClick={() => download(`${slug}.srt`, toSrt(segments))}>
-                .srt
-              </button>
+              {segments.length > 0 && (
+                <button className="btn btn-plain" onClick={() => download(`${slug}.srt`, toSrt(segments))}>
+                  .srt
+                </button>
+              )}
               {!note.research && (
                 <button
                   className="btn btn-primary"
@@ -526,6 +534,21 @@ export default function NotePage() {
             </div>
           )}
         </div>
+
+        {note.body && (
+          <div className="panel">
+            <div className="panel-head">
+              text
+              <button className="btn btn-plain" onClick={() => copy(note.body, "text copied")}>
+                copy
+              </button>
+            </div>
+            <div
+              className="panel-body md transcript"
+              dangerouslySetInnerHTML={{ __html: marked.parse(note.body) }}
+            />
+          </div>
+        )}
 
         {segments.length > 0 && (
           <div className="panel">

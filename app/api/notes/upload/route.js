@@ -4,7 +4,9 @@ import path from "node:path";
 import { Readable } from "node:stream";
 import { pipeline as streamPipeline } from "node:stream/promises";
 import { MEDIA_DIR, saveNote, newId } from "../../../../lib/store";
-import { processFileNote } from "../../../../lib/pipeline";
+import { processFileNote, processImageNote } from "../../../../lib/pipeline";
+
+const IMAGE_EXTS = new Set([".png", ".jpg", ".jpeg", ".webp", ".heic", ".tiff", ".gif", ".bmp"]);
 
 export const dynamic = "force-dynamic";
 
@@ -30,13 +32,15 @@ export async function POST(request) {
   // stream to disk instead of holding a second full copy in memory
   await streamPipeline(Readable.fromWeb(file.stream()), fs.createWriteStream(filePath));
 
+  const isImage = IMAGE_EXTS.has(ext);
   saveNote({
     id,
     createdAt: new Date().toISOString(),
     status: "queued",
     title: file.name || "Uploaded file",
-    source: { type: "file", platform: "local file", originalFilename: file.name },
+    source: { type: "file", platform: isImage ? "image" : "local file", originalFilename: file.name },
   });
-  processFileNote(id, filePath, file.name || "Uploaded file");
+  if (isImage) processImageNote(id, filePath, file.name || "Uploaded image");
+  else processFileNote(id, filePath, file.name || "Uploaded file");
   return NextResponse.json({ id });
 }

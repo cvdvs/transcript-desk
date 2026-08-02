@@ -35,7 +35,12 @@ export default function RootLayout({ children }) {
               <Logo size={21} />
               <span className="logo-name">Transcript Desk</span>
             </Link>
-            <ThemeToggle />
+            <span style={{ display: "flex", alignItems: "center", gap: 14 }}>
+              <Link href="/reading" className="micro" style={{ color: "var(--ink)" }}>
+                reading
+              </Link>
+              <ThemeToggle />
+            </span>
           </header>
           {children}
         </div>

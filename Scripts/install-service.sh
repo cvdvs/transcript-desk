@@ -19,6 +19,14 @@ cd "$APP_DIR"
 npm install
 npm run build
 
+# the OCR helper (Apple Vision) powers text capture from images — optional
+if command -v clang > /dev/null && [ ! -f native/ocr ]; then
+  echo "Building the OCR tool…"
+  (cd native && clang -fobjc-arc -O2 -framework Foundation -framework ImageIO \
+    -framework Vision -framework CoreGraphics -o ocr ocr.m) || \
+    echo "(OCR build failed — image text capture will be disabled)"
+fi
+
 echo "Writing $PLIST"
 mkdir -p "$HOME/Library/LaunchAgents"
 cat > "$PLIST" <<PLIST_EOF
