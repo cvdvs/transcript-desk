@@ -131,6 +131,11 @@ export default function ReadingPage() {
                   <span key={t} className="badge-tag">#{t}</span>
                 ))}
                 <span>{new Date(b.createdAt).toLocaleDateString()}</span>
+                {b.source?.noteId && (
+                  <Link href={`/notes/${b.source.noteId}`} className="meta-link">
+                    via {(b.source.noteTitle || "note").slice(0, 40)}
+                  </Link>
+                )}
               </div>
             </div>
             <button className="card-delete book-delete" onClick={() => remove(b.id)} title="Remove">

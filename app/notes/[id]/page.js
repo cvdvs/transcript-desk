@@ -65,6 +65,7 @@ export default function NotePage() {
   const [folders, setFolders] = useState([]);
   const [newFolderMode, setNewFolderMode] = useState(false);
   const [newFolderName, setNewFolderName] = useState("");
+  const [booksBusy, setBooksBusy] = useState(false);
 
   const load = useCallback(async () => {
     try {
@@ -170,6 +171,27 @@ export default function NotePage() {
       load(); // refresh — the server may still be running or have completed
     } finally {
       setTranslateBusy(false);
+    }
+  }
+
+  async function extractBooks() {
+    setBooksBusy(true);
+    setActionError(null);
+    try {
+      const res = await fetch(`/api/notes/${id}/books`, { method: "POST" });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Book extraction failed.");
+      if (data.added === 0 && data.merged === 0) {
+        showToast(data.total === 0 ? "no books found in this note" : "all already on the list");
+      } else {
+        showToast(
+          `${data.added} book${data.added === 1 ? "" : "s"} added${data.merged ? ` · ${data.merged} updated` : ""} → reading list`
+        );
+      }
+    } catch (err) {
+      setActionError(String(err.message || err));
+    } finally {
+      setBooksBusy(false);
     }
   }
 
@@ -423,6 +445,9 @@ export default function NotePage() {
                     : "translate ro⇄en"}
                 </button>
               )}
+              <button className="btn" onClick={extractBooks} disabled={booksBusy}>
+                {booksBusy ? "reading for books…" : "extract books"}
+              </button>
             </>
           )}
           {note.status === "error" && note.source?.type === "url" && note.source?.url && (
