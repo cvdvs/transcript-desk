@@ -3,6 +3,22 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 
+// fixed-size cover with a quiet placeholder — every book the same shape
+function Cover({ id, title }) {
+  const [ok, setOk] = useState(true);
+  if (!ok) return <div className="book-cover ph">{(title || "?").trim()[0]?.toUpperCase()}</div>;
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      className="book-cover"
+      src={`/api/books/${id}/cover`}
+      alt=""
+      loading="lazy"
+      onError={() => setOk(false)}
+    />
+  );
+}
+
 export default function ReadingPage() {
   const [books, setBooks] = useState(null);
   const [title, setTitle] = useState("");
@@ -11,6 +27,7 @@ export default function ReadingPage() {
   const [toast, setToast] = useState(null);
   const [status, setStatus] = useState(null); // null = all, false = unread, true = read
   const [tag, setTag] = useState(null);
+  const [showAllTags, setShowAllTags] = useState(false);
 
   const load = useCallback(async () => {
     try {
@@ -147,23 +164,40 @@ export default function ReadingPage() {
           >
             read ({books.filter((b) => b.read).length})
           </button>
-          {[...new Set(books.flatMap((b) => b.tags || []))]
-            .sort(
-              (a, z) =>
-                books.filter((b) => b.tags?.includes(z)).length -
-                books.filter((b) => b.tags?.includes(a)).length
-            )
-            .slice(0, 12)
-            .map((t) => (
-              <button
-                key={t}
-                className={`chip ${tag === t ? "active" : ""}`}
-                style={tag === t ? {} : { color: "var(--muted)" }}
-                onClick={() => setTag(tag === t ? null : t)}
-              >
-                #{t}
-              </button>
-            ))}
+          {(() => {
+            const all = [...new Set(books.flatMap((b) => b.tags || []))];
+            const count = (t) => books.filter((b) => b.tags?.includes(t)).length;
+            const sorted = all.sort((a, z) => count(z) - count(a));
+            // tidy: only tags shared by 2+ books up front, the rest behind "more"
+            let main = sorted.filter((t) => count(t) >= 2).slice(0, 8);
+            if (!main.length) main = sorted.slice(0, 5);
+            if (tag && !main.includes(tag)) main = [...main, tag];
+            const extra = sorted.filter((t) => !main.includes(t));
+            const shown = showAllTags ? [...main, ...extra] : main;
+            return (
+              <>
+                {shown.map((t) => (
+                  <button
+                    key={t}
+                    className={`chip ${tag === t ? "active" : ""}`}
+                    style={tag === t ? {} : { color: "var(--muted)" }}
+                    onClick={() => setTag(tag === t ? null : t)}
+                  >
+                    #{t}
+                  </button>
+                ))}
+                {extra.length > 0 && (
+                  <button
+                    className="chip"
+                    style={{ color: "var(--faint)" }}
+                    onClick={() => setShowAllTags(!showAllTags)}
+                  >
+                    {showAllTags ? "less" : `+${extra.length} more`}
+                  </button>
+                )}
+              </>
+            );
+          })()}
         </div>
       )}
 
@@ -177,6 +211,7 @@ export default function ReadingPage() {
               onClick={() => toggleRead(b)}
               title={b.read ? "Read — click to mark unread" : "Unread — click to mark read"}
             />
+            <Cover id={b.id} title={b.title} />
             <div style={{ flex: 1, minWidth: 0 }}>
               <div className="book-title">
                 {b.title}
@@ -195,6 +230,20 @@ export default function ReadingPage() {
                 )}
               </div>
             </div>
+            <button
+              className="btn btn-plain btn-sm book-copy"
+              title="Copy title + author for searching Kindle/Google"
+              onClick={async () => {
+                try {
+                  await navigator.clipboard.writeText(`${b.title}${b.author ? ` ${b.author}` : ""}`);
+                  showToast("copied — paste into kindle / google");
+                } catch {
+                  showToast("copy failed");
+                }
+              }}
+            >
+              copy
+            </button>
             <button className="card-delete book-delete" onClick={() => remove(b.id)} title="Remove">
               ×
             </button>

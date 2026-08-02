@@ -831,6 +831,29 @@ a.seg-time:hover {
   position: relative;
 }
 
+.book-cover {
+  width: 44px;
+  height: 66px;
+  object-fit: cover;
+  border: 1px solid var(--hair);
+  flex-shrink: 0;
+  display: block;
+}
+
+.book-cover.ph {
+  display: grid;
+  place-items: center;
+  font-family: var(--mono);
+  font-size: 14px;
+  color: var(--muted);
+  background: var(--panel);
+}
+
+.book-copy {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
 .book-title {
   font-weight: 650;
   font-size: 15px;

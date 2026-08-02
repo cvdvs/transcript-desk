@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
-import { listBooks, addBook } from "../../../lib/books";
+import { listBooks, addBook, ensureCovers } from "../../../lib/books";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 300;
 
 export async function GET() {
+  ensureCovers(); // backfill any missing covers in the background
   return NextResponse.json({ books: listBooks() });
 }
 
