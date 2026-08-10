@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
 import { listNotes, searchNotes, saveNote, newId } from "../../../lib/store";
-import { processUrlNote } from "../../../lib/pipeline";
+import { processUrlNote, repairThumbnails } from "../../../lib/pipeline";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(request) {
+  repairThumbnails(); // re-home any thumbnail whose remote link expired
   const q = new URL(request.url).searchParams.get("q");
   return NextResponse.json({ notes: q?.trim() ? searchNotes(q) : listNotes() });
 }
