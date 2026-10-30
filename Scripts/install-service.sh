@@ -43,6 +43,8 @@ cat > "$PLIST" <<PLIST_EOF
         <string>${NODE_BIN}</string>
         <string>node_modules/next/dist/bin/next</string>
         <string>start</string>
+        <string>-H</string>
+        <string>127.0.0.1</string>
         <string>-p</string>
         <string>${PORT}</string>
     </array>

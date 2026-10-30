@@ -98,8 +98,9 @@ Want it as a real Mac app — Dock icon, own window, no browser?
 Then find **Transcript Desk** in Spotlight. The app checks the service and
 revives it if needed, so it always opens to a working screen.
 
-On your phone (same Wi-Fi): `http://<your-mac>.local:3999` → share →
-**Add to Home Screen**.
+On your phone (with Tailscale on): `https://<your-mac>.<tailnet>.ts.net:3999` → share →
+**Add to Home Screen**. The service only listens on this Mac; Tailscale carries it
+to your own devices (`tailscale serve --bg --https=3999 http://127.0.0.1:3999`).
 
 ## What it costs to run
 
