@@ -941,3 +941,30 @@ a.seg-time:hover {
 .wide-panel {
   margin-top: 28px;
 }
+
+/* claude sign-in banner */
+.claude-banner {
+  display: flex;
+  gap: 18px;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  margin: 22px 0 0;
+  padding: 16px 20px;
+  border: 1px solid var(--danger);
+  background: var(--panel);
+}
+
+.claude-banner.calm {
+  border-color: var(--hair);
+}
+
+.claude-banner-text {
+  flex: 1;
+  min-width: 240px;
+}
+
+.claude-banner-actions {
+  display: flex;
+  gap: 6px;
+}

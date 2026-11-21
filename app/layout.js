@@ -2,6 +2,7 @@ import "./globals.css";
 import Link from "next/link";
 import Logo from "../components/Logo";
 import ThemeToggle from "../components/ThemeToggle";
+import ClaudeBanner from "../components/ClaudeBanner";
 
 export const metadata = {
   title: "Transcript Desk",
@@ -42,6 +43,7 @@ export default function RootLayout({ children }) {
               <ThemeToggle />
             </span>
           </header>
+          <ClaudeBanner />
           {children}
         </div>
       </body>
