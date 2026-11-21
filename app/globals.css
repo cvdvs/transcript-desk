@@ -664,7 +664,7 @@ a {
 
 /* transcript */
 .transcript {
-  max-height: 80vh;
+  max-height: none;
   overflow-y: auto;
 }
 
@@ -896,4 +896,48 @@ a.seg-time:hover {
   letter-spacing: 0.14em;
   text-transform: uppercase;
   z-index: 50;
+}
+
+/* collapsible long content */
+.collapsible {
+  position: relative;
+}
+
+.collapsible.clipped {
+  overflow: hidden;
+}
+
+.collapsible.clipped::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 90px;
+  background: linear-gradient(to bottom, transparent, var(--panel));
+  pointer-events: none;
+}
+
+.collapse-toggle {
+  display: block;
+  width: 100%;
+  border: none;
+  border-top: 1px solid var(--hair);
+  background: transparent;
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding: 12px;
+  cursor: pointer;
+}
+
+.collapse-toggle:hover {
+  color: var(--ink);
+}
+
+/* research pack + translation sit full width under the summary/transcript */
+.wide-panel {
+  margin-top: 28px;
 }

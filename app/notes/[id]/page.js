@@ -7,6 +7,7 @@ import { marked } from "marked";
 import { toBlocks, formatTimestamp } from "../../../lib/subtitles";
 import { clipboardResearchPrompt, transcriptToText } from "../../../lib/prompts";
 import Thumb from "../../../components/Thumb";
+import Collapsible from "../../../components/Collapsible";
 import AsciiSpinner from "../../../components/AsciiSpinner";
 
 const STATUS_LABELS = {
@@ -531,33 +532,12 @@ export default function NotePage() {
                   copy
                 </button>
               </div>
-              <div className="panel-body md" dangerouslySetInnerHTML={{ __html: marked.parse(note.summary.text) }} />
+              <Collapsible maxHeight={340}>
+                <div className="panel-body md" dangerouslySetInnerHTML={{ __html: marked.parse(note.summary.text) }} />
+              </Collapsible>
             </div>
           )}
 
-          {note.research?.text && (
-            <div className="panel">
-              <div className="panel-head">
-                research pack
-                <button className="btn btn-plain" onClick={() => copy(note.research.text, "research pack copied")}>
-                  copy
-                </button>
-              </div>
-              <div className="panel-body md" dangerouslySetInnerHTML={{ __html: marked.parse(note.research.text) }} />
-            </div>
-          )}
-
-          {note.translation?.text && (
-            <div className="panel">
-              <div className="panel-head">
-                translation
-                <button className="btn btn-plain" onClick={() => copy(note.translation.text, "translation copied")}>
-                  copy
-                </button>
-              </div>
-              <div className="panel-body plain-text">{note.translation.text}</div>
-            </div>
-          )}
         </div>
 
         {note.body && (
@@ -568,10 +548,9 @@ export default function NotePage() {
                 copy
               </button>
             </div>
-            <div
-              className="panel-body md transcript"
-              dangerouslySetInnerHTML={{ __html: marked.parse(note.body) }}
-            />
+            <Collapsible maxHeight={560}>
+              <div className="panel-body md" dangerouslySetInnerHTML={{ __html: marked.parse(note.body) }} />
+            </Collapsible>
           </div>
         )}
 
@@ -581,6 +560,7 @@ export default function NotePage() {
               transcript
               <span>{blocks.length} {blocks.length === 1 ? "section" : "sections"}</span>
             </div>
+            <Collapsible maxHeight={560}>
             <div className="transcript">
               {transcriptItems.map((it, i) =>
                 it.type === "chapter" ? (
@@ -602,9 +582,34 @@ export default function NotePage() {
                 )
               )}
             </div>
+            </Collapsible>
           </div>
         )}
       </div>
+
+          {note.research?.text && (
+            <div className="panel wide-panel">
+              <div className="panel-head">
+                research pack
+                <button className="btn btn-plain" onClick={() => copy(note.research.text, "research pack copied")}>
+                  copy
+                </button>
+              </div>
+              <div className="panel-body md" dangerouslySetInnerHTML={{ __html: marked.parse(note.research.text) }} />
+            </div>
+          )}
+
+          {note.translation?.text && (
+            <div className="panel wide-panel">
+              <div className="panel-head">
+                translation
+                <button className="btn btn-plain" onClick={() => copy(note.translation.text, "translation copied")}>
+                  copy
+                </button>
+              </div>
+              <div className="panel-body plain-text">{note.translation.text}</div>
+            </div>
+          )}
 
       {toast && <div className="copied-toast">{toast}</div>}
     </main>
