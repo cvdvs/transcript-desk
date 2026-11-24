@@ -502,6 +502,22 @@ export default function NotePage() {
               <option value="__new__">new folder…</option>
             </select>
           )}
+          <button
+            className={`btn done-btn ${note.done ? "is-done" : ""}`}
+            onClick={async () => {
+              const next = !note.done;
+              setNote({ ...note, done: next });
+              const res = await fetch(`/api/notes/${id}`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ done: next }),
+              });
+              if (!res.ok) load();
+            }}
+          >
+            <span className={`done-dot inline ${note.done ? "is-done" : ""}`} />
+            {note.done ? "done" : "mark done"}
+          </button>
           <button className="btn btn-danger" onClick={removeNote} style={{ marginLeft: "auto" }}>
             delete
           </button>

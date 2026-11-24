@@ -15,6 +15,12 @@ export async function GET(request, { params }) {
 export async function PATCH(request, { params }) {
   const { id } = await params;
   const body = await request.json().catch(() => ({}));
+  // the done dot: ticks an idea off (used it / wrote about it)
+  if ("done" in body && !("folder" in body)) {
+    const note = patchNote(id, { done: Boolean(body.done) });
+    if (!note) return NextResponse.json({ error: "Not found" }, { status: 404 });
+    return NextResponse.json({ note });
+  }
   if (!("folder" in body)) {
     return NextResponse.json({ error: "Nothing to update." }, { status: 400 });
   }

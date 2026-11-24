@@ -968,3 +968,65 @@ a.seg-time:hover {
   display: flex;
   gap: 6px;
 }
+
+/* done dot — tick off ideas you've used or written about */
+:root {
+  --done: #1f9d55;
+}
+
+:root[data-theme="dark"] {
+  --done: #3ecf74;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --done: #3ecf74;
+  }
+}
+
+.done-dot {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.85);
+  background: rgba(120, 120, 120, 0.55);
+  cursor: pointer;
+  padding: 0;
+  z-index: 2;
+  transition: background 0.12s, transform 0.08s;
+}
+
+.done-dot:hover {
+  transform: scale(1.12);
+}
+
+.done-dot.is-done {
+  background: var(--done);
+  border-color: var(--done);
+}
+
+.done-dot.inline {
+  position: static;
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-width: 1.5px;
+  margin-right: 8px;
+  vertical-align: -1px;
+  pointer-events: none;
+}
+
+.done-btn.is-done {
+  border-color: var(--done);
+  color: var(--done);
+}
+
+@media (pointer: coarse) {
+  .done-dot:not(.inline) {
+    width: 30px;
+    height: 30px;
+  }
+}

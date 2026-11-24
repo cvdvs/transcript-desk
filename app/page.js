@@ -20,6 +20,7 @@ export default function Home() {
   const [notice, setNotice] = useState(null);
   const [dragging, setDragging] = useState(false);
   const [folder, setFolder] = useState(null); // null = all, "" = unsorted
+  const [doneFilter, setDoneFilter] = useState(null); // null = any, false = to do, true = done
   const [renamingFolder, setRenamingFolder] = useState(false);
   const [renameValue, setRenameValue] = useState("");
   const searchRefQ = useRef("");
@@ -216,6 +217,18 @@ export default function Home() {
     }
   }
 
+  async function toggleDone(e, n) {
+    e.preventDefault();
+    e.stopPropagation();
+    setNotes((prev) => prev.map((x) => (x.id === n.id ? { ...x, done: !n.done } : x))); // instant
+    const res = await fetch(`/api/notes/${n.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ done: !n.done }),
+    });
+    if (!res.ok) load();
+  }
+
   async function removeNote(e, id) {
     e.preventDefault();
     e.stopPropagation();
@@ -235,7 +248,9 @@ export default function Home() {
       ? [...folderNames, folder].sort()
       : folderNames;
   const showFolderRow = chipNames.length > 0 || folder !== null;
+  const doneCount = all.filter((n) => n.done).length;
   const filtered = all.filter((n) => {
+    if (doneFilter !== null && Boolean(n.done) !== doneFilter) return false;
     if (folder === null) return true;
     if (folder === "") return !n.folder;
     return n.folder === folder;
@@ -306,6 +321,24 @@ export default function Home() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
+        </div>
+
+        <div className="folder-row">
+          <button className={`chip ${doneFilter === null ? "active" : ""}`} onClick={() => setDoneFilter(null)}>
+            any
+          </button>
+          <button
+            className={`chip ${doneFilter === false ? "active" : ""}`}
+            onClick={() => setDoneFilter(doneFilter === false ? null : false)}
+          >
+            to do ({all.length - doneCount})
+          </button>
+          <button
+            className={`chip ${doneFilter === true ? "active" : ""}`}
+            onClick={() => setDoneFilter(doneFilter === true ? null : true)}
+          >
+            done ({doneCount})
+          </button>
         </div>
 
         {showFolderRow && (
@@ -379,6 +412,11 @@ export default function Home() {
           {filtered.map((n) => (
             <a key={n.id} className="note-card" href={`/notes/${n.id}`}>
               <Thumb src={n.thumbnail} seed={n.title || n.id} />
+              <button
+                className={`done-dot ${n.done ? "is-done" : ""}`}
+                onClick={(e) => toggleDone(e, n)}
+                title={n.done ? "Done — click to mark as to do" : "To do — click to mark done"}
+              />
               <button className="card-delete" onClick={(e) => removeNote(e, n.id)} title="Delete">
                 ×
               </button>
