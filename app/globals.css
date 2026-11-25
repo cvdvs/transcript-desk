@@ -1163,3 +1163,75 @@ a.seg-time:hover {
   border-left: 2px solid var(--done);
   padding-left: 8px;
 }
+
+/* note page actions: status row (done · folder · delete), then grouped tools */
+.actions-bar.status-row {
+  margin: 22px 0 10px;
+}
+.actions-bar.tools-row {
+  margin: 0 0 34px;
+  gap: 10px 18px;
+}
+.action-group {
+  display: inline-flex;
+  align-items: stretch;
+  flex-wrap: wrap;
+}
+.action-group .btn + .btn {
+  margin-left: -1px;
+}
+.action-group .btn:hover:not(:disabled) {
+  position: relative;
+  z-index: 1;
+}
+.group-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  align-self: center;
+  margin-right: 8px;
+}
+@media (max-width: 640px) {
+  .actions-bar.tools-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .actions-bar.tools-row {
+    gap: 14px;
+  }
+  .action-group .group-label {
+    width: 100%;
+    margin: 0 0 6px;
+  }
+  .action-group .btn {
+    margin-bottom: -1px;
+  }
+}
+
+.shot-path {
+  position: absolute;
+  left: 4px;
+  bottom: 4px;
+  font-family: var(--mono);
+  font-size: 9.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  background: var(--bg);
+  color: var(--ink);
+  border: 1px solid var(--hair);
+  padding: 3px 6px;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.shot:hover .shot-path,
+.shot-path:focus-visible {
+  opacity: 1;
+}
+@media (pointer: coarse) {
+  .shot-path {
+    opacity: 1;
+  }
+}

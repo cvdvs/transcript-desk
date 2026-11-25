@@ -6,7 +6,7 @@
 
 import { useEffect, useRef, useState } from "react";
 
-export default function MyNotes({ id, initial, onNote, toast }) {
+export default function MyNotes({ id, initial, onNote, toast, paths, copy }) {
   // seeded once per note — background refreshes never clobber typing
   const [intent, setIntent] = useState(initial.intent || "");
   const [myNotes, setMyNotes] = useState(initial.myNotes || "");
@@ -100,6 +100,12 @@ export default function MyNotes({ id, initial, onNote, toast }) {
     }
   }
 
+  function copyShotPath(file) {
+    const p = paths?.shots?.find((x) => x.endsWith(`-${file}`));
+    if (p) copy(p, "image path copied");
+    else toast?.("path not ready yet — try again in a second");
+  }
+
   // esc closes the viewer
   useEffect(() => {
     if (!viewing) return;
@@ -159,6 +165,9 @@ export default function MyNotes({ id, initial, onNote, toast }) {
                   loading="lazy"
                   onClick={() => setViewing(s.file)}
                 />
+                <button className="shot-path" onClick={() => copyShotPath(s.file)} title="Copy this image's path for Claude">
+                  path
+                </button>
                 <button className="card-delete" onClick={() => removeShot(s.file)} title="Delete screenshot">
                   ×
                 </button>

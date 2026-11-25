@@ -60,6 +60,7 @@ export default function NotePage() {
   const router = useRouter();
   const [note, setNote] = useState(null);
   const [missing, setMissing] = useState(false);
+  const [paths, setPaths] = useState(null); // where the .md + screenshots live on the Mac
   const [toast, setToast] = useState(null);
   const [actionError, setActionError] = useState(null); // persistent, dismissible
   const [researchBusy, setResearchBusy] = useState(false);
@@ -78,6 +79,7 @@ export default function NotePage() {
       }
       const data = await res.json();
       setNote(data.note);
+      setPaths(data.paths || null);
       return data.note;
     } catch {
       return null;
@@ -112,6 +114,18 @@ export default function NotePage() {
   function showToast(msg) {
     setToast(msg);
     setTimeout(() => setToast(null), 1800);
+  }
+
+  // paths on this Mac to the note's .md (transcript, summary, your notes)
+  // and its screenshots — paste into Claude so it can open them. Copied
+  // straight from state: a clipboard write after a fetch gets blocked.
+  function copyPaths() {
+    const p = paths;
+    if (!p?.md && !p?.shots?.length) return showToast("no files yet");
+    const lines = [`"${note.title || "Untitled"}" — Transcript Desk note`];
+    if (p.md) lines.push(`Note (transcript, summary, my notes): ${p.md}`);
+    if (p.shots.length) lines.push("Screenshots:", ...p.shots);
+    copy(lines.join("\n"), p.shots.length ? `paths copied (${p.shots.length} screenshots)` : "path copied");
   }
 
   // navigator.clipboard only exists on https/localhost — over plain http from
@@ -392,71 +406,23 @@ export default function NotePage() {
 
       {/* always rendered: folder + delete work in every state, including
           mid-processing (batch uploads get filed right away) */}
-      <div className="actions-bar">
-          {hasText && (
-            <>
-              <button className="btn" onClick={() => copy(contentText, note.body ? "text copied" : "transcript copied")}>
-                {note.body ? "copy text" : "copy transcript"}
-              </button>
-              {note.summary?.text && (
-                <button className="btn" onClick={() => copy(note.summary.text, "summary copied")}>
-                  copy summary
-                </button>
-              )}
-              <button
-                className="btn"
-                onClick={() =>
-                  copy(
-                    clipboardResearchPrompt(note, note.body || transcriptToText(segments).text),
-                    "claude prompt copied"
-                  )
-                }
-              >
-                copy claude prompt
-              </button>
-              <button className="btn btn-plain" onClick={() => download(`${slug}.md`, markdownExport())}>
-                .md
-              </button>
-              <button className="btn btn-plain" onClick={() => download(`${slug}.txt`, contentText)}>
-                .txt
-              </button>
-              {segments.length > 0 && (
-                <button className="btn btn-plain" onClick={() => download(`${slug}.srt`, toSrt(segments))}>
-                  .srt
-                </button>
-              )}
-              {!note.research && (
-                <button
-                  className="btn btn-primary"
-                  onClick={generateResearch}
-                  disabled={researchBusy || note.researchStatus === "running"}
-                >
-                  {researchBusy || note.researchStatus === "running"
-                    ? "analyzing… 1–2 min"
-                    : "research pack"}
-                </button>
-              )}
-              {!note.translation && (
-                <button
-                  className="btn"
-                  onClick={generateTranslationClick}
-                  disabled={translateBusy || note.translationStatus === "running"}
-                >
-                  {translateBusy || note.translationStatus === "running"
-                    ? "translating…"
-                    : "translate ro⇄en"}
-                </button>
-              )}
-              <button className="btn" onClick={extractBooks} disabled={booksBusy}>
-                {booksBusy ? "reading for books…" : "extract books"}
-              </button>
-            </>
-          )}
-          {note.status === "error" && note.source?.type === "url" && note.source?.url && (
-            <button className="btn btn-primary" onClick={retryNote}>
-              try again
-            </button>
-          )}
+      <div className="actions-bar status-row">
+          <button
+            className={`btn done-btn ${note.done ? "is-done" : ""}`}
+            onClick={async () => {
+              const next = !note.done;
+              setNote({ ...note, done: next });
+              const res = await fetch(`/api/notes/${id}`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ done: next }),
+              });
+              if (!res.ok) load();
+            }}
+          >
+            <span className={`done-dot inline ${note.done ? "is-done" : ""}`} />
+            {note.done ? "done" : "mark done"}
+          </button>
           {newFolderMode ? (
             <span style={{ display: "flex", gap: 6 }}>
               <input
@@ -503,32 +469,98 @@ export default function NotePage() {
               <option value="__new__">new folder…</option>
             </select>
           )}
-          <button
-            className={`btn done-btn ${note.done ? "is-done" : ""}`}
-            onClick={async () => {
-              const next = !note.done;
-              setNote({ ...note, done: next });
-              const res = await fetch(`/api/notes/${id}`, {
-                method: "PATCH",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ done: next }),
-              });
-              if (!res.ok) load();
-            }}
-          >
-            <span className={`done-dot inline ${note.done ? "is-done" : ""}`} />
-            {note.done ? "done" : "mark done"}
-          </button>
+          {note.status === "error" && note.source?.type === "url" && note.source?.url && (
+            <button className="btn btn-primary" onClick={retryNote}>
+              try again
+            </button>
+          )}
           <button className="btn btn-danger" onClick={removeNote} style={{ marginLeft: "auto" }}>
             delete
           </button>
       </div>
 
+      {hasText && (
+        <div className="actions-bar tools-row">
+          <div className="action-group">
+            <span className="group-label">copy</span>
+            <button className="btn" onClick={() => copy(contentText, note.body ? "text copied" : "transcript copied")}>
+              {note.body ? "text" : "transcript"}
+            </button>
+            {note.summary?.text && (
+              <button className="btn" onClick={() => copy(note.summary.text, "summary copied")}>
+                summary
+              </button>
+            )}
+            <button className="btn" onClick={copyPaths} title="File paths of the note and its screenshots, to paste into Claude">
+              paths for claude
+            </button>
+            <button
+              className="btn"
+              onClick={() =>
+                copy(
+                  clipboardResearchPrompt(note, note.body || transcriptToText(segments).text),
+                  "claude prompt copied"
+                )
+              }
+            >
+              claude prompt
+            </button>
+          </div>
+          <div className="action-group">
+            <span className="group-label">save</span>
+            <button className="btn" onClick={() => download(`${slug}.md`, markdownExport())}>
+              .md
+            </button>
+            <button className="btn" onClick={() => download(`${slug}.txt`, contentText)}>
+              .txt
+            </button>
+            {segments.length > 0 && (
+              <button className="btn" onClick={() => download(`${slug}.srt`, toSrt(segments))}>
+                .srt
+              </button>
+            )}
+          </div>
+          <div className="action-group">
+            <span className="group-label">claude</span>
+            {!note.research && (
+              <button
+                className="btn"
+                onClick={generateResearch}
+                disabled={researchBusy || note.researchStatus === "running"}
+              >
+                {researchBusy || note.researchStatus === "running"
+                  ? "analyzing… 1–2 min"
+                  : "research pack"}
+              </button>
+            )}
+            {!note.translation && (
+              <button
+                className="btn"
+                onClick={generateTranslationClick}
+                disabled={translateBusy || note.translationStatus === "running"}
+              >
+                {translateBusy || note.translationStatus === "running"
+                  ? "translating…"
+                  : "translate ro⇄en"}
+              </button>
+            )}
+            <button className="btn" onClick={extractBooks} disabled={booksBusy}>
+              {booksBusy ? "reading for books…" : "extract books"}
+            </button>
+          </div>
+        </div>
+      )}
+
       <MyNotes
         key={note.id}
         id={note.id}
         initial={note}
-        onNote={(n) => setNote((prev) => ({ ...prev, shots: n.shots }))}
+        onNote={(n) => {
+          setNote((prev) => ({ ...prev, shots: n.shots }));
+          load(); // refresh file paths for the new screenshots
+        }}
+        paths={paths}
+        copy={copy}
         toast={showToast}
       />
 

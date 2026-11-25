@@ -1,6 +1,16 @@
 import { NextResponse } from "next/server";
 import { getNote, patchNote, deleteNote } from "../../../../lib/store";
+import path from "node:path";
 import { syncMd } from "../../../../lib/pipeline";
+import { TRANSCRIPTS_DIR } from "../../../../lib/mdsync";
+
+// absolute paths of the note's mirror files, so you can point Claude at them
+function filePaths(note) {
+  return {
+    md: note.mdPath ? path.join(TRANSCRIPTS_DIR, note.mdPath) : null,
+    shots: (note.shots || []).map((s) => path.join(TRANSCRIPTS_DIR, "_attachments", `${note.id}-${s.file}`)),
+  };
+}
 
 export const dynamic = "force-dynamic";
 
@@ -8,7 +18,7 @@ export async function GET(request, { params }) {
   const { id } = await params;
   const note = getNote(id);
   if (!note) return NextResponse.json({ error: "Not found" }, { status: 404 });
-  return NextResponse.json({ note });
+  return NextResponse.json({ note, paths: filePaths(note) });
 }
 
 // currently used for folder assignment
