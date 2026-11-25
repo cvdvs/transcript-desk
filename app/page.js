@@ -21,6 +21,7 @@ export default function Home() {
   const [dragging, setDragging] = useState(false);
   const [folder, setFolder] = useState(null); // null = all, "" = unsorted
   const [doneFilter, setDoneFilter] = useState(null); // null = any, false = to do, true = done
+  const [shotsOnly, setShotsOnly] = useState(false);
   const [renamingFolder, setRenamingFolder] = useState(false);
   const [renameValue, setRenameValue] = useState("");
   const searchRefQ = useRef("");
@@ -249,8 +250,10 @@ export default function Home() {
       : folderNames;
   const showFolderRow = chipNames.length > 0 || folder !== null;
   const doneCount = all.filter((n) => n.done).length;
+  const shotsCount = all.filter((n) => n.shotCount > 0).length;
   const filtered = all.filter((n) => {
     if (doneFilter !== null && Boolean(n.done) !== doneFilter) return false;
+    if (shotsOnly && !(n.shotCount > 0)) return false;
     if (folder === null) return true;
     if (folder === "") return !n.folder;
     return n.folder === folder;
@@ -338,6 +341,13 @@ export default function Home() {
             onClick={() => setDoneFilter(doneFilter === true ? null : true)}
           >
             done ({doneCount})
+          </button>
+          <button
+            className={`chip ${shotsOnly ? "active" : ""}`}
+            style={{ marginLeft: 10 }}
+            onClick={() => setShotsOnly(!shotsOnly)}
+          >
+            with screenshots ({shotsCount})
           </button>
         </div>
 
