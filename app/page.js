@@ -422,6 +422,7 @@ export default function Home() {
               </button>
               <div className="note-body">
                 <div className="note-title">{n.title || "Untitled"}</div>
+                {n.intent && <div className="note-intent">{n.intent}</div>}
                 {!n.snippet && n.excerpt && <div className="note-excerpt">{n.excerpt}</div>}
                 <div className="note-meta">
                   {n.source?.platform && <span>{n.source.platform}</span>}

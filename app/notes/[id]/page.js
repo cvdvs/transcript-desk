@@ -8,6 +8,7 @@ import { toBlocks, formatTimestamp } from "../../../lib/subtitles";
 import { clipboardResearchPrompt, transcriptToText } from "../../../lib/prompts";
 import Thumb from "../../../components/Thumb";
 import Collapsible from "../../../components/Collapsible";
+import MyNotes from "../../../components/MyNotes";
 import AsciiSpinner from "../../../components/AsciiSpinner";
 
 const STATUS_LABELS = {
@@ -522,6 +523,14 @@ export default function NotePage() {
             delete
           </button>
       </div>
+
+      <MyNotes
+        key={note.id}
+        id={note.id}
+        initial={note}
+        onNote={(n) => setNote((prev) => ({ ...prev, shots: n.shots }))}
+        toast={showToast}
+      />
 
       <div className="note-layout">
         <div className="stack">

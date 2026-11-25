@@ -15,6 +15,16 @@ export async function GET(request, { params }) {
 export async function PATCH(request, { params }) {
   const { id } = await params;
   const body = await request.json().catch(() => ({}));
+  // your own notes on a video: how you'll use it + free notes (autosaved)
+  if (("intent" in body || "myNotes" in body) && !("folder" in body)) {
+    const patch = {};
+    if ("intent" in body) patch.intent = String(body.intent ?? "").slice(0, 2000);
+    if ("myNotes" in body) patch.myNotes = String(body.myNotes ?? "").slice(0, 100000);
+    const note = patchNote(id, patch);
+    if (!note) return NextResponse.json({ error: "Not found" }, { status: 404 });
+    syncMd(id);
+    return NextResponse.json({ note });
+  }
   // the done dot: ticks an idea off (used it / wrote about it)
   if ("done" in body && !("folder" in body)) {
     const note = patchNote(id, { done: Boolean(body.done) });

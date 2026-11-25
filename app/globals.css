@@ -1030,3 +1030,136 @@ a.seg-time:hover {
     height: 30px;
   }
 }
+
+/* "yours" panel: screenshots, how I'll use it, notes */
+.mynotes {
+  margin: 0 0 28px;
+}
+
+.mynotes-grid {
+  display: grid;
+  grid-template-columns: 7fr 5fr;
+  gap: 24px;
+  padding: 18px 20px 20px;
+}
+
+.mynotes-grid > * {
+  min-width: 0;
+}
+
+@media (max-width: 980px) {
+  .mynotes-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.mynotes-text label {
+  display: block;
+  margin: 0 0 6px;
+}
+
+.mynotes-text label + .mynotes-input {
+  margin-bottom: 16px;
+}
+
+.mynotes-input {
+  display: block;
+  width: 100%;
+  resize: vertical;
+  font-family: var(--sans);
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--ink);
+  background: var(--bg);
+  border: 1px solid var(--hair);
+  padding: 10px 12px;
+  outline: none;
+}
+
+.mynotes-input:focus {
+  border-color: var(--rule);
+}
+
+.mynotes-input::placeholder {
+  color: var(--faint);
+}
+
+.mynotes-input.grow {
+  min-height: 150px;
+}
+
+@media (pointer: coarse) {
+  .mynotes-input {
+    font-size: 16px; /* no iOS zoom on focus */
+  }
+}
+
+.shot-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  gap: 8px;
+}
+
+.shot {
+  position: relative;
+  aspect-ratio: 1;
+  border: 1px solid var(--hair);
+  overflow: hidden;
+}
+
+.shot img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  cursor: zoom-in;
+}
+
+.shot:hover .card-delete {
+  opacity: 1;
+}
+
+.shot-add {
+  aspect-ratio: 1;
+  border: 1px dashed var(--rule);
+  background: transparent;
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.shot-add:hover {
+  color: var(--ink);
+  border-color: var(--ink);
+}
+
+.shot-viewer {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background: var(--overlay);
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  cursor: zoom-out;
+}
+
+.shot-viewer img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  border: 1px solid var(--hair);
+}
+
+/* your intent line on library cards */
+.note-intent {
+  margin-top: 6px;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--ink);
+  border-left: 2px solid var(--done);
+  padding-left: 8px;
+}
