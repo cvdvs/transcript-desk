@@ -24,6 +24,27 @@ export default function Home() {
   // done: null = any, false = to do, true = done · platform: null = any
   const [filt, setFilt] = useState({ done: null, shots: false, mine: false, research: false, platform: null, sort: "new" });
   const [filterOpen, setFilterOpen] = useState(false);
+
+  // remember filters, folder and sort on this device between visits
+  const filtersLoaded = useRef(false);
+  useEffect(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem("td-filters") || "null");
+      if (saved?.filt) setFilt((prev) => ({ ...prev, ...saved.filt }));
+      if (saved && "folder" in saved) setFolder(saved.folder);
+    } catch {
+      /* storage blocked or corrupt — start fresh */
+    }
+    filtersLoaded.current = true;
+  }, []);
+  useEffect(() => {
+    if (!filtersLoaded.current) return;
+    try {
+      localStorage.setItem("td-filters", JSON.stringify({ filt, folder }));
+    } catch {
+      /* storage blocked */
+    }
+  }, [filt, folder]);
   const [renamingFolder, setRenamingFolder] = useState(false);
   const [renameValue, setRenameValue] = useState("");
   const searchRefQ = useRef("");
