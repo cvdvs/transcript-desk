@@ -1366,3 +1366,136 @@ a.seg-time:hover {
     overflow-wrap: anywhere;
   }
 }
+
+/* settings page */
+.settings-title {
+  font-size: 30px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  margin: 0 0 30px;
+}
+.set-panel {
+  margin-bottom: 24px;
+}
+.set-body {
+  padding: 8px 18px 18px;
+}
+.set-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--hair);
+}
+.set-grow {
+  flex: 1;
+  min-width: 0;
+}
+.set-name {
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.set-count {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--faint);
+  min-width: 28px;
+  text-align: right;
+  margin-right: 8px;
+}
+.set-path {
+  display: block;
+  font-family: var(--mono);
+  font-size: 10.5px;
+  color: var(--faint);
+  margin-top: 3px;
+  overflow-wrap: anywhere;
+}
+.set-hint {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.5;
+  margin-top: 14px;
+}
+.set-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+}
+.set-shotnote {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--hair);
+}
+.set-shotnote:hover .set-shottitle {
+  text-decoration: underline;
+}
+.set-shotstrip {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  flex: none;
+}
+.set-shotstrip img {
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+  border: 1px solid var(--hair);
+}
+.set-more {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  color: var(--muted);
+  margin-left: 4px;
+}
+.set-shottitle {
+  flex: 1;
+  min-width: 0;
+  font-size: 14px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+@media (max-width: 640px) {
+  .set-body {
+    padding: 6px 12px 14px;
+  }
+  .set-shotnote {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .set-shotstrip img {
+    width: 34px;
+    height: 34px;
+  }
+  .set-shottitle {
+    flex-basis: 100%;
+    order: -1;
+  }
+}
+
+@media (max-width: 420px) {
+  .logo-name {
+    white-space: nowrap;
+  }
+  .topbar > span {
+    gap: 10px !important;
+  }
+  .topbar > span .micro {
+    letter-spacing: 0.08em;
+  }
+  .settings-label {
+    display: none;
+  }
+  .topbar .settings-link .gear {
+    display: block;
+  }
+}
+.settings-link .gear {
+  display: none;
+}
