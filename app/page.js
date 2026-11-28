@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { formatTimestamp } from "../lib/subtitles";
 import Thumb from "../components/Thumb";
+import FilterPanel, { FunnelIcon } from "../components/FilterPanel";
 
 const PROCESSING = ["queued", "waiting", "fetching", "reading", "downloading", "transcribing", "summarizing"];
 
@@ -20,8 +21,9 @@ export default function Home() {
   const [notice, setNotice] = useState(null);
   const [dragging, setDragging] = useState(false);
   const [folder, setFolder] = useState(null); // null = all, "" = unsorted
-  const [doneFilter, setDoneFilter] = useState(null); // null = any, false = to do, true = done
-  const [shotsOnly, setShotsOnly] = useState(false);
+  // done: null = any, false = to do, true = done · platform: null = any
+  const [filt, setFilt] = useState({ done: null, shots: false, mine: false, research: false, platform: null, sort: "new" });
+  const [filterOpen, setFilterOpen] = useState(false);
   const [renamingFolder, setRenamingFolder] = useState(false);
   const [renameValue, setRenameValue] = useState("");
   const searchRefQ = useRef("");
@@ -248,16 +250,55 @@ export default function Home() {
     folder && folder !== "" && !folderNames.includes(folder)
       ? [...folderNames, folder].sort()
       : folderNames;
-  const showFolderRow = chipNames.length > 0 || folder !== null;
-  const doneCount = all.filter((n) => n.done).length;
-  const shotsCount = all.filter((n) => n.shotCount > 0).length;
-  const filtered = all.filter((n) => {
-    if (doneFilter !== null && Boolean(n.done) !== doneFilter) return false;
-    if (shotsOnly && !(n.shotCount > 0)) return false;
-    if (folder === null) return true;
-    if (folder === "") return !n.folder;
-    return n.folder === folder;
-  });
+  const counts = {
+    all: all.length,
+    done: all.filter((n) => n.done).length,
+    todo: all.filter((n) => !n.done).length,
+    shots: all.filter((n) => n.shotCount > 0).length,
+    mine: all.filter((n) => n.hasMyNotes).length,
+    research: all.filter((n) => n.hasResearch).length,
+    unsorted: unsortedCount,
+  };
+  const folderCounts = chipNames.map((f) => [f, all.filter((n) => n.folder === f).length]);
+  const platformCounts = Object.entries(
+    all.reduce((acc, n) => {
+      const p = n.source?.platform || n.kind;
+      if (p) acc[p] = (acc[p] || 0) + 1;
+      return acc;
+    }, {})
+  ).sort((a, b) => b[1] - a[1]);
+
+  const filtered = all
+    .filter((n) => {
+      if (filt.done !== null && Boolean(n.done) !== filt.done) return false;
+      if (filt.shots && !(n.shotCount > 0)) return false;
+      if (filt.mine && !n.hasMyNotes) return false;
+      if (filt.research && !n.hasResearch) return false;
+      if (filt.platform && (n.source?.platform || n.kind) !== filt.platform) return false;
+      if (folder === null) return true;
+      if (folder === "") return !n.folder;
+      return n.folder === folder;
+    })
+    .sort((a, b) => {
+      if (filt.sort === "old") return (a.createdAt || "").localeCompare(b.createdAt || "");
+      if (filt.sort === "title") return (a.title || "").localeCompare(b.title || "");
+      return 0; // server already sends newest first
+    });
+
+  // what's switched on, as removable pills under the toolbar
+  const active = [];
+  if (filt.done !== null) active.push([filt.done ? "done" : "to do", () => setFilt({ ...filt, done: null })]);
+  if (folder !== null) active.push([folder === "" ? "unsorted" : folder, () => setFolder(null)]);
+  if (filt.platform) active.push([filt.platform, () => setFilt({ ...filt, platform: null })]);
+  if (filt.shots) active.push(["with screenshots", () => setFilt({ ...filt, shots: false })]);
+  if (filt.mine) active.push(["with my notes", () => setFilt({ ...filt, mine: false })]);
+  if (filt.research) active.push(["with research pack", () => setFilt({ ...filt, research: false })]);
+  if (filt.sort !== "new") active.push([filt.sort === "old" ? "oldest first" : "title a–z", () => setFilt({ ...filt, sort: "new" })]);
+  const filterCount = active.length;
+  const clearAll = () => {
+    setFilt({ done: null, shots: false, mine: false, research: false, platform: null, sort: "new" });
+    setFolder(null);
+  };
 
   return (
     <main>
@@ -315,62 +356,50 @@ export default function Home() {
       <section>
         <div className="library-head">
           <span className="micro" style={{ color: "var(--ink)" }}>
-            library ({notes ? notes.length : "…"})
+            library ({notes ? (filtered.length !== notes.length ? `${filtered.length} of ${notes.length}` : notes.length) : "…"})
           </span>
-          <input
-            ref={searchRef}
-            className="search-input"
-            placeholder="search  /"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-        </div>
-
-        <div className="folder-row">
-          <button className={`chip ${doneFilter === null ? "active" : ""}`} onClick={() => setDoneFilter(null)}>
-            any
-          </button>
-          <button
-            className={`chip ${doneFilter === false ? "active" : ""}`}
-            onClick={() => setDoneFilter(doneFilter === false ? null : false)}
-          >
-            to do ({all.length - doneCount})
-          </button>
-          <button
-            className={`chip ${doneFilter === true ? "active" : ""}`}
-            onClick={() => setDoneFilter(doneFilter === true ? null : true)}
-          >
-            done ({doneCount})
-          </button>
-          <button
-            className={`chip ${shotsOnly ? "active" : ""}`}
-            style={{ marginLeft: 10 }}
-            onClick={() => setShotsOnly(!shotsOnly)}
-          >
-            with screenshots ({shotsCount})
-          </button>
-        </div>
-
-        {showFolderRow && (
-          <div className="folder-row">
-            <button className={`chip ${folder === null ? "active" : ""}`} onClick={() => setFolder(null)}>
-              all ({all.length})
+          <div className="lib-tools">
+            <input
+              ref={searchRef}
+              className="search-input"
+              placeholder="search  /"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+            <button
+              className={`filter-btn ${filterOpen || filterCount ? "on" : ""}`}
+              onClick={() => setFilterOpen(!filterOpen)}
+              aria-expanded={filterOpen}
+            >
+              <FunnelIcon />
+              filter{filterCount ? ` · ${filterCount}` : ""}
             </button>
-            {chipNames.map((f) => (
-              <button
-                key={f}
-                className={`chip ${folder === f ? "active" : ""}`}
-                onClick={() => setFolder(folder === f ? null : f)}
-              >
-                {f} ({all.filter((n) => n.folder === f).length})
+            <FilterPanel
+              open={filterOpen}
+              onClose={() => setFilterOpen(false)}
+              f={{ ...filt, folder }}
+              set={(patch) => {
+                if ("folder" in patch) setFolder(patch.folder);
+                const { folder: _f, ...rest } = patch;
+                if (Object.keys(rest).length) setFilt((prev) => ({ ...prev, ...rest }));
+              }}
+              counts={counts}
+              folders={folderCounts}
+              platforms={platformCounts}
+            />
+          </div>
+        </div>
+
+        {(filterCount > 0 || renamingFolder) && (
+          <div className="folder-row">
+            {active.map(([label, remove]) => (
+              <button key={label} className="chip active" onClick={remove} title="Remove this filter">
+                {label} ×
               </button>
             ))}
-            {(unsortedCount > 0 || folder === "") && (
-              <button
-                className={`chip ${folder === "" ? "active" : ""}`}
-                onClick={() => setFolder(folder === "" ? null : "")}
-              >
-                unsorted ({unsortedCount})
+            {filterCount > 1 && (
+              <button className="chip" onClick={clearAll}>
+                clear all
               </button>
             )}
             {folder && folder !== "" && !renamingFolder && (
@@ -383,7 +412,7 @@ export default function Home() {
                     setRenamingFolder(true);
                   }}
                 >
-                  rename
+                  rename folder
                 </button>
                 <button className="chip chip-danger" onClick={doDeleteFolder}>
                   delete folder
@@ -412,7 +441,7 @@ export default function Home() {
 
         {notes && filtered.length === 0 && (
           <div className="empty">
-            {search.trim() || folder !== null
+            {search.trim() || filterCount
               ? "no notes match"
               : "nothing here yet — paste your first link"}
           </div>
